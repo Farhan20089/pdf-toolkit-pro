@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Coffee, Heart, X, Check, Sparkles } from 'lucide-react';
+import { DONATION_URL } from '../../utils/config';
 
 export function TipJarModal() {
   const [isOpen, setIsOpen] = useState(false);
@@ -113,17 +114,29 @@ export function TipJarModal() {
                     />
                   </div>
 
-                  <button
-                    type="submit"
-                    disabled={amountToPay <= 0}
-                    className="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-extrabold text-sm shadow-md shadow-amber-500/20 transition-all inline-flex items-center justify-center gap-2 disabled:opacity-50"
-                  >
-                    <Heart className="w-4 h-4 fill-current" />
-                    <span>Send ${amountToPay || 0} Support</span>
-                  </button>
+                  <div className="flex flex-col gap-2 pt-1">
+                    <button
+                      type="submit"
+                      disabled={amountToPay <= 0}
+                      className="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-extrabold text-sm shadow-md shadow-amber-500/20 transition-all inline-flex items-center justify-center gap-2 disabled:opacity-50"
+                    >
+                      <Heart className="w-4 h-4 fill-current" />
+                      <span>Send ${amountToPay || 0} Support</span>
+                    </button>
+
+                    <a
+                      href={DONATION_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full py-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs transition-colors inline-flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700"
+                    >
+                      <Coffee className="w-4 h-4 text-amber-500" />
+                      <span>Open Official Buy Me a Coffee Page ➔</span>
+                    </a>
+                  </div>
 
                   <p className="text-[11px] text-center text-slate-400">
-                    🔒 Secure simulated checkout • No account needed
+                    🔒 Secure client checkout • Zero account required
                   </p>
                 </form>
               </>

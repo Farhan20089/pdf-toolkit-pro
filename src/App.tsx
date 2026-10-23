@@ -7,9 +7,10 @@ import { AffiliateBanner } from './components/common/AffiliateBanner';
 import { TipJarModal } from './components/common/TipJarModal';
 import { CookieConsent } from './components/common/CookieConsent';
 
-import { PrivacyPolicy } from './components/legal/PrivacyPolicy';
-import { TermsOfService } from './components/legal/TermsOfService';
-import { ContactModal } from './components/legal/ContactModal';
+import { PrivacyPolicyModal } from './components/legal/PrivacyPolicyModal';
+import { TermsOfServiceModal } from './components/legal/TermsOfServiceModal';
+import { ContactUsModal } from './components/legal/ContactUsModal';
+import { AboutUsModal } from './components/legal/AboutUsModal';
 
 import { ImageCompressor } from './tools/ImageCompressor/ImageCompressor';
 import { PdfConverter } from './tools/PdfConverter/PdfConverter';
@@ -22,16 +23,17 @@ import { FreelanceCalculator } from './tools/FreelanceCalculator/FreelanceCalcul
 import { ToolId } from './types';
 import { TOOLS_METADATA } from './utils/seoData';
 import { useTheme } from './hooks/useTheme';
-import { Sparkles, ShieldCheck } from 'lucide-react';
+import { Sparkles, ShieldCheck, CheckCircle2 } from 'lucide-react';
 
-export type LegalModalType = 'privacy' | 'terms' | 'contact' | null;
+export type LegalModalType = 'privacy' | 'terms' | 'contact' | 'about' | null;
 
 export function App() {
   const { isDark, toggleTheme } = useTheme();
   const [showDemoAds, setShowDemoAds] = useState(true);
-  const [activeLegalModal, setActiveLegalModal] = useState<LegalModalType>(null);
+  const [activeModal, setActiveModal] = useState<LegalModalType>(null);
+  const [globalToast, setGlobalToast] = useState<string | null>(null);
 
-  // Hash-based routing to support direct URLs (#image-compressor, #privacy, #terms, #contact, etc.)
+  // Hash-based routing to support direct URLs (#image-compressor, #privacy, #terms, #contact, #about, etc.)
   const [activeTool, setActiveTool] = useState<ToolId>(() => {
     if (typeof window !== 'undefined') {
       const hash = window.location.hash.replace('#', '') as ToolId;
@@ -42,16 +44,18 @@ export function App() {
     return 'image-compressor';
   });
 
-  // Listen to hash changes (supports back/forward navigation and direct #privacy / #terms / #contact deep-links)
+  // Listen to hash changes (supports back/forward navigation and direct #privacy / #terms / #contact / #about deep-links)
   useEffect(() => {
     const handleHashChange = () => {
       const rawHash = window.location.hash.replace('#', '');
       if (rawHash === 'privacy') {
-        setActiveLegalModal('privacy');
+        setActiveModal('privacy');
       } else if (rawHash === 'terms') {
-        setActiveLegalModal('terms');
+        setActiveModal('terms');
       } else if (rawHash === 'contact') {
-        setActiveLegalModal('contact');
+        setActiveModal('contact');
+      } else if (rawHash === 'about') {
+        setActiveModal('about');
       } else if (TOOLS_METADATA[rawHash as ToolId]) {
         setActiveTool(rawHash as ToolId);
       }
@@ -60,11 +64,13 @@ export function App() {
     // Check hash on initial mount
     const initialHash = window.location.hash.replace('#', '');
     if (initialHash === 'privacy') {
-      setActiveLegalModal('privacy');
+      setActiveModal('privacy');
     } else if (initialHash === 'terms') {
-      setActiveLegalModal('terms');
+      setActiveModal('terms');
     } else if (initialHash === 'contact') {
-      setActiveLegalModal('contact');
+      setActiveModal('contact');
+    } else if (initialHash === 'about') {
+      setActiveModal('about');
     }
 
     window.addEventListener('hashchange', handleHashChange);
@@ -77,21 +83,36 @@ export function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleOpenLegal = (type: 'privacy' | 'terms' | 'contact') => {
-    setActiveLegalModal(type);
+  const handleOpenModal = (type: 'privacy' | 'terms' | 'about' | 'contact') => {
+    setActiveModal(type);
     window.location.hash = type;
   };
 
-  const handleCloseLegal = () => {
-    setActiveLegalModal(null);
+  const handleCloseModal = () => {
+    setActiveModal(null);
     // Restore tool hash
     window.location.hash = activeTool;
+  };
+
+  const handleShowToast = (msg: string) => {
+    setGlobalToast(msg);
+    setTimeout(() => {
+      setGlobalToast(null);
+    }, 4000);
   };
 
   const currentMetadata = TOOLS_METADATA[activeTool];
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200">
+      {/* Global Toast Alert */}
+      {globalToast && (
+        <div className="fixed top-20 right-4 z-50 p-4 rounded-2xl bg-emerald-600 text-white text-xs font-bold shadow-2xl flex items-center gap-2 animate-fade-in">
+          <CheckCircle2 className="w-4 h-4 shrink-0" />
+          <span>{globalToast}</span>
+        </div>
+      )}
+
       {/* Navigation Header */}
       <Header
         activeTool={activeTool}
@@ -100,12 +121,12 @@ export function App() {
         onToggleTheme={toggleTheme}
         showDemoAds={showDemoAds}
         onToggleDemoAds={() => setShowDemoAds(!showDemoAds)}
-        onOpenContact={() => handleOpenLegal('contact')}
-        onOpenLegal={handleOpenLegal}
+        onOpenModal={handleOpenModal}
+        onOpenContact={() => handleOpenModal('contact')}
       />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Top Banner Ad Slot (728x90 desktop / 320x50 mobile) - Zero CLS */}
+        {/* Top Banner Ad Slot: Below Header (id="ad-slot-header", min-height 90px) */}
         <AdSlot type="header" showDemoContent={showDemoAds} />
 
         {/* Hero Section */}
@@ -115,7 +136,7 @@ export function App() {
             <span>100% In-Browser Execution • $0 Server Footprint</span>
             <span className="hidden sm:inline-block text-slate-300 dark:text-slate-700">|</span>
             <span className="hidden sm:inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
-              <ShieldCheck className="w-3.5 h-3.5" /> Zero Uploads
+              <ShieldCheck className="w-3.5 h-3.5" /> Zero Server Uploads
             </span>
           </div>
 
@@ -128,7 +149,7 @@ export function App() {
           </p>
         </section>
 
-        {/* Tool Canvas Container */}
+        {/* Main Tool View Container */}
         <div className="w-full max-w-5xl mx-auto">
           {activeTool === 'image-compressor' && <ImageCompressor />}
           {activeTool === 'pdf-converter' && <PdfConverter />}
@@ -139,9 +160,9 @@ export function App() {
           {activeTool === 'freelance-calculator' && <FreelanceCalculator />}
         </div>
 
-        {/* In-Tool / Below Action Slot: id="ad-slot-content" (300x250 or fluid responsive) */}
+        {/* In-Content Ad Slot: Below the conversion action button (id="ad-slot-inline", min-height 250px) */}
         <div className="max-w-5xl mx-auto">
-          <AdSlot type="content" showDemoContent={showDemoAds} />
+          <AdSlot type="inline" showDemoContent={showDemoAds} />
         </div>
 
         {/* Keyword-Rich Crawlable SEO Section (How-to, FAQs, JSON-LD Schema) */}
@@ -154,43 +175,42 @@ export function App() {
           <AffiliateBanner />
         </div>
 
-        {/* Bottom Footer Ad Slot: id="ad-slot-footer" */}
+        {/* Bottom Ad Slot: Above Footer (id="ad-slot-footer", min-height 90px) */}
         <AdSlot type="footer" showDemoContent={showDemoAds} />
       </main>
 
-      {/* Footer with Mandatory Legal & Trust Links */}
+      {/* Modern 3-Column Footer with Trust Badge & Modal Links */}
       <Footer
         onSelectTool={handleSelectTool}
-        onOpenLegal={handleOpenLegal}
-        onOpenContact={() => handleOpenLegal('contact')}
+        onOpenModal={handleOpenModal}
       />
 
       {/* Floating Sticky Tip Jar / Buy Me a Coffee */}
       <TipJarModal />
 
       {/* GDPR / AdSense Cookie Consent Banner */}
-      <CookieConsent onOpenPrivacy={() => handleOpenLegal('privacy')} />
+      <CookieConsent onOpenPrivacy={() => handleOpenModal('privacy')} />
 
-      {/* Mandatory Legal & Trust Modals (AdSense Requirement) */}
-      <PrivacyPolicy
-        isOpen={activeLegalModal === 'privacy'}
-        onClose={handleCloseLegal}
-        onOpenTerms={() => handleOpenLegal('terms')}
-        onOpenContact={() => handleOpenLegal('contact')}
+      {/* Dedicated Legal & Trust Modals */}
+      <PrivacyPolicyModal
+        isOpen={activeModal === 'privacy'}
+        onClose={handleCloseModal}
       />
 
-      <TermsOfService
-        isOpen={activeLegalModal === 'terms'}
-        onClose={handleCloseLegal}
-        onOpenPrivacy={() => handleOpenLegal('privacy')}
-        onOpenContact={() => handleOpenLegal('contact')}
+      <TermsOfServiceModal
+        isOpen={activeModal === 'terms'}
+        onClose={handleCloseModal}
       />
 
-      <ContactModal
-        isOpen={activeLegalModal === 'contact'}
-        onClose={handleCloseLegal}
-        onOpenPrivacy={() => handleOpenLegal('privacy')}
-        onOpenTerms={() => handleOpenLegal('terms')}
+      <ContactUsModal
+        isOpen={activeModal === 'contact'}
+        onClose={handleCloseModal}
+        onShowToast={handleShowToast}
+      />
+
+      <AboutUsModal
+        isOpen={activeModal === 'about'}
+        onClose={handleCloseModal}
       />
     </div>
   );

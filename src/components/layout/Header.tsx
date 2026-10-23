@@ -11,9 +11,12 @@ import {
   Calculator, 
   Zap, 
   Layout,
-  HelpCircle
+  HelpCircle,
+  Coffee,
+  Heart
 } from 'lucide-react';
 import { ToolId } from '../../types';
+import { DONATION_URL, APP_NAME } from '../../utils/config';
 
 interface HeaderProps {
   activeTool: ToolId;
@@ -22,6 +25,7 @@ interface HeaderProps {
   onToggleTheme: () => void;
   showDemoAds: boolean;
   onToggleDemoAds: () => void;
+  onOpenModal?: (type: 'privacy' | 'terms' | 'about' | 'contact') => void;
   onOpenContact?: () => void;
   onOpenLegal?: (type: 'privacy' | 'terms' | 'contact') => void;
 }
@@ -33,6 +37,7 @@ export function Header({
   onToggleTheme,
   showDemoAds,
   onToggleDemoAds,
+  onOpenModal,
   onOpenContact,
   onOpenLegal
 }: HeaderProps) {
@@ -47,7 +52,9 @@ export function Header({
   ];
 
   const handleContact = () => {
-    if (onOpenContact) {
+    if (onOpenModal) {
+      onOpenModal('contact');
+    } else if (onOpenContact) {
       onOpenContact();
     } else if (onOpenLegal) {
       onOpenLegal('contact');
@@ -73,10 +80,10 @@ export function Header({
               </div>
               <div>
                 <span className="font-extrabold text-base md:text-lg tracking-tight bg-gradient-to-r from-slate-900 via-indigo-950 to-indigo-700 dark:from-white dark:via-slate-200 dark:to-indigo-300 bg-clip-text text-transparent">
-                  OmniTool<span className="text-indigo-600 dark:text-indigo-400">.engine</span>
+                  {APP_NAME}
                 </span>
                 <span className="hidden sm:block text-[10px] text-slate-500 dark:text-slate-400 font-medium">
-                  High-Traffic Client-Side Toolkit
+                  100% In-Browser Privacy Suite
                 </span>
               </div>
             </a>
@@ -105,10 +112,22 @@ export function Header({
             })}
           </nav>
 
-          {/* Right Actions: Contact, Demo Ads Toggle, Theme Toggle */}
+          {/* Right Actions: Buy Me a Coffee, Contact, Demo Ads Toggle, Theme Toggle */}
           <div className="flex items-center gap-2">
+            {/* Buy Me a Coffee Link */}
+            <a
+              href={DONATION_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Support creator on Buy Me a Coffee"
+              className="px-3 py-1.5 min-h-[36px] rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs shadow-sm shadow-amber-500/20 transition-all inline-flex items-center gap-1.5"
+            >
+              <Coffee className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Coffee</span>
+            </a>
+
             {/* Contact & Support Link */}
-            {(onOpenContact || onOpenLegal) && (
+            {(onOpenModal || onOpenContact || onOpenLegal) && (
               <button
                 type="button"
                 onClick={handleContact}
@@ -116,7 +135,7 @@ export function Header({
                 className="px-2.5 py-1.5 text-[11px] font-semibold rounded-xl text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors inline-flex items-center gap-1 min-h-[36px]"
               >
                 <HelpCircle className="w-4 h-4 text-indigo-500" />
-                <span className="hidden md:inline">Contact Us</span>
+                <span className="hidden md:inline">Contact</span>
               </button>
             )}
 
