@@ -10,7 +10,8 @@ import {
   Code2, 
   Calculator, 
   Zap, 
-  Layout
+  Layout,
+  HelpCircle
 } from 'lucide-react';
 import { ToolId } from '../../types';
 
@@ -21,6 +22,8 @@ interface HeaderProps {
   onToggleTheme: () => void;
   showDemoAds: boolean;
   onToggleDemoAds: () => void;
+  onOpenContact?: () => void;
+  onOpenLegal?: (type: 'privacy' | 'terms' | 'contact') => void;
 }
 
 export function Header({
@@ -29,7 +32,9 @@ export function Header({
   isDark,
   onToggleTheme,
   showDemoAds,
-  onToggleDemoAds
+  onToggleDemoAds,
+  onOpenContact,
+  onOpenLegal
 }: HeaderProps) {
   const tools = [
     { id: 'image-compressor' as ToolId, label: 'Image to WebP', icon: ImageIcon },
@@ -40,6 +45,14 @@ export function Header({
     { id: 'developer-tools' as ToolId, label: 'JSON & Dev Tools', icon: Code2 },
     { id: 'freelance-calculator' as ToolId, label: 'Profit Calculator', icon: Calculator },
   ];
+
+  const handleContact = () => {
+    if (onOpenContact) {
+      onOpenContact();
+    } else if (onOpenLegal) {
+      onOpenLegal('contact');
+    }
+  };
 
   return (
     <header className="sticky top-0 z-30 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors">
@@ -79,7 +92,7 @@ export function Header({
                   key={t.id}
                   type="button"
                   onClick={() => onSelectTool(t.id)}
-                  className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all inline-flex items-center gap-1.5 ${
+                  className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all inline-flex items-center gap-1.5 min-h-[36px] ${
                     isActive
                       ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm'
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
@@ -92,14 +105,27 @@ export function Header({
             })}
           </nav>
 
-          {/* Right Actions: Theme Toggle, Demo Ads Toggle, Privacy Badge */}
+          {/* Right Actions: Contact, Demo Ads Toggle, Theme Toggle */}
           <div className="flex items-center gap-2">
+            {/* Contact & Support Link */}
+            {(onOpenContact || onOpenLegal) && (
+              <button
+                type="button"
+                onClick={handleContact}
+                title="About toolkit mission & Contact Support"
+                className="px-2.5 py-1.5 text-[11px] font-semibold rounded-xl text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors inline-flex items-center gap-1 min-h-[36px]"
+              >
+                <HelpCircle className="w-4 h-4 text-indigo-500" />
+                <span className="hidden md:inline">Contact Us</span>
+              </button>
+            )}
+
             {/* Demo Ads Simulator Toggle */}
             <button
               type="button"
               onClick={onToggleDemoAds}
               title={showDemoAds ? 'Switch to raw AdSense slot frames' : 'Preview simulated ad units'}
-              className="px-2.5 py-1 text-[11px] font-medium rounded-lg border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-indigo-400 transition-colors hidden sm:inline-flex items-center gap-1"
+              className="px-2.5 py-1 text-[11px] font-medium rounded-lg border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-indigo-400 transition-colors hidden sm:inline-flex items-center gap-1 min-h-[36px]"
             >
               <Layout className="w-3 h-3 text-indigo-500" />
               <span>{showDemoAds ? 'Ads: Demo' : 'Ads: Wireframe'}</span>
@@ -110,7 +136,7 @@ export function Header({
               type="button"
               onClick={onToggleTheme}
               aria-label="Toggle Color Theme"
-              className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 transition-colors"
+              className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 transition-colors min-h-[40px] min-w-[40px] flex items-center justify-center"
             >
               {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-indigo-600" />}
             </button>
@@ -127,7 +153,7 @@ export function Header({
                 key={t.id}
                 type="button"
                 onClick={() => onSelectTool(t.id)}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-lg whitespace-nowrap shrink-0 transition-all inline-flex items-center gap-1.5 ${
+                className={`px-3 py-2 text-xs font-semibold rounded-lg whitespace-nowrap shrink-0 transition-all inline-flex items-center gap-1.5 min-h-[40px] ${
                   isActive
                     ? 'bg-indigo-600 text-white shadow-sm'
                     : 'bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800'

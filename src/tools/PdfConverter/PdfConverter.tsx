@@ -176,7 +176,24 @@ export function PdfConverter() {
       }
 
       const filename = pdfName.endsWith('.pdf') ? pdfName : `${pdfName}.pdf`;
-      pdf.save(filename);
+      try {
+        const blob = pdf.output('blob');
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        document.body.appendChild(link);
+        link.click();
+        setTimeout(() => {
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        }, 1500);
+      } catch (saveErr) {
+        // Fallback to direct pdf.save
+        pdf.save(filename);
+      }
     } catch (err) {
       console.error('Failed to generate PDF:', err);
       alert('Error generating PDF document. Check console for details.');
@@ -297,7 +314,7 @@ export function PdfConverter() {
               <button
                 type="button"
                 onClick={() => setPages([])}
-                className="px-3 py-1.5 text-xs font-medium rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-slate-200 dark:border-slate-700"
+                className="px-4 py-3 min-h-[48px] text-xs font-semibold rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-slate-200 dark:border-slate-700 flex items-center justify-center"
               >
                 Clear All
               </button>
@@ -306,7 +323,7 @@ export function PdfConverter() {
                 type="button"
                 onClick={generatePdf}
                 disabled={isGenerating || pages.length === 0}
-                className="px-4 py-2 text-sm font-bold rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-500/20 transition-all inline-flex items-center gap-2 disabled:opacity-50"
+                className="px-6 py-3 min-h-[48px] text-sm font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-500/20 transition-all inline-flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {isGenerating ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
                 Download PDF
@@ -332,7 +349,7 @@ export function PdfConverter() {
                 <select
                   value={pageSize}
                   onChange={(e) => setPageSize(e.target.value as any)}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none"
+                  className="w-full px-3.5 py-2.5 min-h-[48px] text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none"
                 >
                   <option value="a4">Standard A4 (210 × 297 mm)</option>
                   <option value="letter">US Letter (8.5 × 11 in)</option>
@@ -349,7 +366,7 @@ export function PdfConverter() {
                   <button
                     type="button"
                     onClick={() => setOrientation('p')}
-                    className={`py-2 text-xs font-semibold rounded-xl border transition-all ${
+                    className={`py-2.5 min-h-[48px] text-xs font-semibold rounded-xl border transition-all flex items-center justify-center ${
                       orientation === 'p'
                         ? 'bg-indigo-600 text-white border-indigo-600'
                         : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
@@ -360,7 +377,7 @@ export function PdfConverter() {
                   <button
                     type="button"
                     onClick={() => setOrientation('l')}
-                    className={`py-2 text-xs font-semibold rounded-xl border transition-all ${
+                    className={`py-2.5 min-h-[48px] text-xs font-semibold rounded-xl border transition-all flex items-center justify-center ${
                       orientation === 'l'
                         ? 'bg-indigo-600 text-white border-indigo-600'
                         : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'

@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { marked } from 'marked';
+import jsPDF from 'jspdf';
 import { 
   FileEdit, 
   Eye, 
@@ -104,15 +105,73 @@ export function MarkdownEditor() {
     const link = document.createElement('a');
     link.href = url;
     link.download = 'document.md';
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
     document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    setTimeout(() => {
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }, 1500);
+  };
+
+  const downloadPdfFile = () => {
+    try {
+      const doc = new jsPDF({
+        orientation: 'p',
+        unit: 'pt',
+        format: 'a4',
+      });
+
+      const margin = 40;
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const maxLineWidth = pageWidth - margin * 2;
+
+      doc.setFont('Helvetica', 'normal');
+      doc.setFontSize(11);
+
+      // Parse plain text cleanly from compiled output or source
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = compiledHtml;
+      const cleanText = tempDiv.innerText || tempDiv.textContent || content;
+
+      const splitLines = doc.splitTextToSize(cleanText, maxLineWidth);
+      let cursorY = 50;
+
+      for (let i = 0; i < splitLines.length; i++) {
+        if (cursorY > doc.internal.pageSize.getHeight() - 50) {
+          doc.addPage();
+          cursorY = 50;
+        }
+        doc.text(splitLines[i], margin, cursorY);
+        cursorY += 16;
+      }
+
+      const blob = doc.output('blob');
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'document.pdf';
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      document.body.appendChild(link);
+      link.click();
+      setTimeout(() => {
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }, 1500);
+    } catch (e) {
+      console.warn('Direct jsPDF download fallback to print:', e);
+      handlePrint();
+    }
   };
 
   const handlePrint = () => {
     const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
+    if (!printWindow) {
+      downloadPdfFile();
+      return;
+    }
     printWindow.document.write(`
       <!DOCTYPE html>
       <html>
@@ -248,7 +307,7 @@ export function MarkdownEditor() {
           <button
             type="button"
             onClick={() => copy(compiledHtml, 'compiled-html')}
-            className="px-3 py-1.5 text-xs font-semibold rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition-colors inline-flex items-center gap-1.5 border border-slate-200 dark:border-slate-700"
+            className="px-3.5 py-2.5 min-h-[44px] sm:min-h-[48px] text-xs font-semibold rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors inline-flex items-center gap-1.5 border border-slate-200 dark:border-slate-700"
           >
             {copiedKey === 'compiled-html' ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
             Copy HTML
@@ -257,19 +316,30 @@ export function MarkdownEditor() {
           <button
             type="button"
             onClick={downloadMarkdownFile}
-            className="px-3 py-1.5 text-xs font-semibold rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition-colors inline-flex items-center gap-1.5 border border-slate-200 dark:border-slate-700"
+            className="px-3.5 py-2.5 min-h-[44px] sm:min-h-[48px] text-xs font-semibold rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors inline-flex items-center gap-1.5 border border-slate-200 dark:border-slate-700"
           >
             <Download className="w-3.5 h-3.5" />
-            .md
+            Export .md
+          </button>
+
+          <button
+            type="button"
+            onClick={downloadPdfFile}
+            className="px-4 py-2.5 min-h-[44px] sm:min-h-[48px] text-xs font-bold rounded-xl bg-indigo-600 text-white hover:bg-indigo-500 shadow-md shadow-indigo-600/20 transition-all inline-flex items-center gap-1.5"
+            title="Download PDF directly to device (mobile-ready)"
+          >
+            <Download className="w-3.5 h-3.5" />
+            Download PDF
           </button>
 
           <button
             type="button"
             onClick={handlePrint}
-            className="px-3.5 py-1.5 text-xs font-bold rounded-xl bg-indigo-600 text-white hover:bg-indigo-500 shadow-sm transition-all inline-flex items-center gap-1.5"
+            className="px-3.5 py-2.5 min-h-[44px] sm:min-h-[48px] text-xs font-semibold rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors inline-flex items-center gap-1.5 border border-slate-200 dark:border-slate-700 hidden sm:inline-flex"
+            title="Open browser print preview"
           >
             <Printer className="w-3.5 h-3.5" />
-            Print / PDF
+            Print
           </button>
         </div>
       </div>
