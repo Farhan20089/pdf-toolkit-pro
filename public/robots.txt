@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+
+# High-Intent Tool Canonical Routes
+Allow: /#image-compressor
+Allow: /#pdf-converter
+Allow: /#qr-generator
+Allow: /#markdown-editor
+Allow: /#social-meta-tags
+Allow: /#developer-tools
+Allow: /#freelance-calculator
+
+Sitemap: https://omnitoolkit.dev/sitemap.xml

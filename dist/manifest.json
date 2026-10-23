@@ -1,0 +1,22 @@
+{
+  "short_name": "OmniTool",
+  "name": "OmniTool — Client-Side Utility Toolkit Engine",
+  "description": "100% private, zero-backend-cost browser utility engine for images, social tags, developers, and freelancers.",
+  "icons": [
+    {
+      "src": "/icon-192.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/icon-512.svg",
+      "type": "image/svg+xml",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#020617",
+  "theme_color": "#4f46e5",
+  "display": "standalone",
+  "orientation": "portrait"
+}
